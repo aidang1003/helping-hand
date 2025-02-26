@@ -2,7 +2,9 @@
 pragma solidity ^0.8.26;
 
 import {HelpingHand} from "./HelpingHand.sol";
-import {USDCAcceptor} from "./USDCAcceptor.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 
 contract HelpingHandFactory {
     // Variables to deploy a helping hand contract
@@ -25,7 +27,7 @@ contract HelpingHandFactory {
     uint initialAmountNeeded;
 
     // Non-user defined variables
-    uint helpingHandId = 0;
+    uint helpingHandIdCounter = 0;
 
     IERC20 public immutable usdc;
 
@@ -46,36 +48,35 @@ contract HelpingHandFactory {
     function addHelpingHand () external {
         // Create a "hand" struct
         hand memory helpingHand = hand({owner: msg.sender, startDate: block.timestamp, endDate: endDate, subject: subject, additionalDetails: additionalDetails,initialAmountNeeded: initialAmountNeeded,currentBalance: 0});
-        idToHand[helpingHandId] = helpingHand;
-        helpingHandId++; // iterate the id 1 now that it has been used
+        idToHand[helpingHandIdCounter] = helpingHand;
+        helpingHandIdCounter++; // iterate the id 1 now that it has been used
     }
 
     function verifyIdentitiy () external {
         // Verify the identity of the user before allowing them to create the hand contract
     }
 
-    function deposit(uint _helpingHandId, uint256 _amount) external {
+    function deposit(uint _helpingHandId, uint _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
 
         // Transfer USDC from sender to this contract (requires prior approval)
         require(usdc.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
 
         // Update the balance of the person calling the contract
-        // This mapping the total amount of USDC held by the contract
+        // This mapping adds to the total amount of USDC an address has on the contract
         balances[msg.sender] += _amount;
         // Update the balance in the hand struct
         // This is the balance each proposal has
-        hand[helpingHandId].currentBalance += _amount;
-
+        idToHand[_helpingHandId].currentBalance += _amount;
 
         emit Deposit(msg.sender, _amount);
     }
 
 
-    function withdraw(uint _helpingHandId, uint256 _amount) external {
-        require(amount > 0, "Amount must be greater than 0");
+    function withdraw(uint _helpingHandId, uint _amount) external {
+        require(_amount > 0, "Amount must be greater than 0");
         //require(balances[msg.sender] >= amount, "Insufficient balance");  
-        require(idToHand[_helpingHandId].owner = msg.sender); // Require the hand owner is the person calling withdraw
+        require(idToHand[_helpingHandId].owner == msg.sender); // Require the hand owner is the person calling withdraw
 
         // Subtract balance form the addresses that added funds to that proposal
         // More complex than taking an amount from msg.sender
@@ -83,16 +84,12 @@ contract HelpingHandFactory {
         //balances[msg.sender] -= amount;
 
         // remove the funds from the balance of the hand
-        hand[helpingHandId].currentBalance -= _amount;
+        idToHand[_helpingHandId].currentBalance -= _amount;
 
         // Transfer USDC back to the user
-        require(usdc.transfer(msg.sender, amount), "Transfer failed");
+        require(usdc.transfer(msg.sender, _amount), "Transfer failed");
 
-        emit Withdrawal(msg.sender, amount);
-    }
-
-    function emergencyWithdraw(address to, uint256 amount) external onlyOwner { // Not sure what this does
-        require(usdc.transfer(to, amount), "Emergency transfer failed");
+        emit Withdrawal(msg.sender, _amount);
     }
 
     function getContractBalance() external view returns (uint256) {

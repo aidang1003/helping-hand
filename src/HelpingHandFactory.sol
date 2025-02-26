@@ -1,23 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import {HelpingHand} from "./HelpingHand.sol";
+
 contract HelpingHandFactory {
     // Variables to deploy a helping hand contract
+
+    struct hand {
+        address owner;
+        uint startDate;
+        uint endDate;
+        string subject;
+        string additionalDetails;
+        uint initialAmountNeeded;
+        uint currentBalance;
+    }
+
+    //Need this from user to set in struct
     address user;
+    uint endDate;
     string subject; // Some text information on their condition
     string additionalDetails; 
     uint initialAmountNeeded;
 
+    //Non-user defined variables
+    uint helpingHandId = 0;
+
     // mappings
-    mapping(address owner => uint256 helpingHandId) addressToID;
+    mapping(uint256 helpingHandId => hand helpingHand) idToHand;
 
     // functions in the helping hand contract
     function addHelpingHand () external {
-        // Add a "hand" to the struct
+        // Create a "hand" struct
+        hand memory helpingHand = hand({owner: msg.sender, startDate: block.timestamp, endDate: endDate, subject: subject, additionalDetails: additionalDetails,initialAmountNeeded: initialAmountNeeded,currentBalance: 0});
+        idToHand[helpingHandId] = helpingHand;
     }
 
     function verifyIdentitiy () external {
         // Verify the identity of the user before allowing them to create the hand contract
+    }
+
+        // functions in helping hand will update the struct:
+    function withdraw (uint _someBalance) external {
+        // allow the owner to withdraw some amount of balance
+    }
+
+    function fund (uint _fundingAmount) external {
+        // add an amount to the funcding balance
     }
 
 }

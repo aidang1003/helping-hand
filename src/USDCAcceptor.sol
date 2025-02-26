@@ -3,10 +3,11 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {HelpingHand} from "./HelpingHand.sol";
 
 abstract contract USDCAcceptor is Ownable {
     IERC20 public immutable usdc;
-    mapping(address => uint256) public balances;
+    //mapping(address => uint256) public balances;
 
     event Deposit(address indexed user, uint256 amount);
     event Withdrawal(address indexed user, uint256 amount);
@@ -16,16 +17,17 @@ abstract contract USDCAcceptor is Ownable {
         usdc = IERC20(_usdcAddress);
     }
 
-    function deposit(uint256 amount) external {
-        require(amount > 0, "Amount must be greater than 0");
+    function deposit(uint256 _amount) external {
+        require(_amount > 0, "Amount must be greater than 0");
 
         // Transfer USDC from sender to this contract (requires prior approval)
-        require(usdc.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+        require(usdc.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
 
         // Update balance
-        balances[msg.sender] += amount;
+        balances[helpingHandId].currentBalance += _amount;
+        // Update the balance in the hand struct mapping
 
-        emit Deposit(msg.sender, amount);
+        emit Deposit(msg.sender, _amount);
     }
 
     function withdraw(uint256 amount) external {

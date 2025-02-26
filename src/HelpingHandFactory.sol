@@ -28,7 +28,13 @@ contract HelpingHandFactory {
     uint helpingHandId = 0;
 
     // mappings
-    mapping(uint256 helpingHandId => hand helpingHand) idToHand;
+    mapping(uint256 helpingHandId => hand helpingHand) idToHand; // tracks balances a hand proposal has
+    mapping(address => uint256) public balances; // tracks the balance contributed by a user
+
+    constructor(address _usdcAddress) { // Depending on the network we deploy it will have a different USDC contract address so specify in the constructor
+        require(_usdcAddress != address(0), "Invalid USDC address");
+        usdc = IERC20(_usdcAddress);
+    }
 
     // functions in the helping hand contract
     function addHelpingHand () external {
@@ -42,9 +48,21 @@ contract HelpingHandFactory {
         // Verify the identity of the user before allowing them to create the hand contract
     }
 
-    function fund (uint _helpingHandId, uint _fundingAmount) external {
-        // add an amount to the funcding balance
-        idToHand[_helpingHandId].currentBalance += _fundingAmount;
+    function deposit(uint _helpingHandId, uint256 _amount) external {
+        require(_amount > 0, "Amount must be greater than 0");
+
+        // Transfer USDC from sender to this contract (requires prior approval)
+        require(usdc.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+
+        // Update the balance of the person calling the contract
+        // This mapping the total amount of USDC held by the contract
+        balances[msg.sender] += _amount;
+        // Update the balance in the hand struct
+        // This is the balance each proposal has
+        hand[helpingHandId].currentBalance += _amount;
+
+
+        emit Deposit(msg.sender, _amount);
     }
 
     function withdraw (uint _someBalance) external {

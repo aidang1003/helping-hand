@@ -34,19 +34,21 @@ contract HelpingHandFactory {
         // Create a "hand" struct
         hand memory helpingHand = hand({owner: msg.sender, startDate: block.timestamp, endDate: endDate, subject: subject, additionalDetails: additionalDetails,initialAmountNeeded: initialAmountNeeded,currentBalance: 0});
         idToHand[helpingHandId] = helpingHand;
+        helpingHandId++; // iterate the id 1 now that it has been used
     }
 
     function verifyIdentitiy () external {
         // Verify the identity of the user before allowing them to create the hand contract
     }
 
-        // functions in helping hand will update the struct:
-    function withdraw (uint _someBalance) external {
-        // allow the owner to withdraw some amount of balance
+    function fund (uint _helpingHandId, uint _fundingAmount) external {
+        // add an amount to the funcding balance
+        idToHand[_helpingHandId].currentBalance += _fundingAmount;
     }
 
-    function fund (uint _fundingAmount) external {
-        // add an amount to the funcding balance
+    function withdraw (uint _someBalance) external {
+        // allow the owner to withdraw some amount of balance
+
     }
 
 }

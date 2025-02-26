@@ -64,3 +64,11 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+
+### Git
+```
+git add .
+git commit -m "<add your comment>"
+git push -u origin main
+```

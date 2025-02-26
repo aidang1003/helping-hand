@@ -17,17 +17,23 @@ contract HelpingHandFactory {
         uint currentBalance;
     }
 
-    //Need this from user to set in struct
+    // Need this from user to set in struct
     address user;
     uint endDate;
     string subject; // Some text information on their condition
     string additionalDetails; 
     uint initialAmountNeeded;
 
-    //Non-user defined variables
+    // Non-user defined variables
     uint helpingHandId = 0;
 
-    // mappings
+    IERC20 public immutable usdc;
+
+    // Events
+    event Deposit(address indexed user, uint256 amount);
+    event Withdrawal(address indexed user, uint256 amount);
+
+    // Mappings
     mapping(uint256 helpingHandId => hand helpingHand) idToHand; // tracks balances a hand proposal has
     mapping(address => uint256) public balances; // tracks the balance contributed by a user
 
@@ -65,9 +71,32 @@ contract HelpingHandFactory {
         emit Deposit(msg.sender, _amount);
     }
 
-    function withdraw (uint _someBalance) external {
-        // allow the owner to withdraw some amount of balance
 
+    function withdraw(uint _helpingHandId, uint256 _amount) external {
+        require(amount > 0, "Amount must be greater than 0");
+        //require(balances[msg.sender] >= amount, "Insufficient balance");  
+        require(idToHand[_helpingHandId].owner = msg.sender); // Require the hand owner is the person calling withdraw
+
+        // Subtract balance form the addresses that added funds to that proposal
+        // More complex than taking an amount from msg.sender
+        // Subtract amount from the multiple senders which could have funded a hand
+        //balances[msg.sender] -= amount;
+
+        // remove the funds from the balance of the hand
+        hand[helpingHandId].currentBalance -= _amount;
+
+        // Transfer USDC back to the user
+        require(usdc.transfer(msg.sender, amount), "Transfer failed");
+
+        emit Withdrawal(msg.sender, amount);
+    }
+
+    function emergencyWithdraw(address to, uint256 amount) external onlyOwner { // Not sure what this does
+        require(usdc.transfer(to, amount), "Emergency transfer failed");
+    }
+
+    function getContractBalance() external view returns (uint256) {
+        return usdc.balanceOf(address(this));
     }
 
 }

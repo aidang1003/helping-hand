@@ -2,6 +2,7 @@
 pragma solidity ^0.8.26;
 
 import {HelpingHand} from "./HelpingHand.sol";
+import {USDCAcceptor} from "./USDCAcceptor.sol";
 
 contract HelpingHandFactory {
     // Variables to deploy a helping hand contract

@@ -19,11 +19,6 @@ contract HelpingHandFactory {
         uint currentBalance;
     }
 
-    // Need this from user to set in struct
-    string subject; // Some text information on their condition
-    string additionalDetails; 
-    uint initialAmountNeeded;
-
     // Non-user defined variables
     uint helpingHandIdCounter = 0;
 
@@ -50,16 +45,10 @@ contract HelpingHandFactory {
         helpingHandIdCounter++; // iterate the id 1 now that it has been used
     }
 
-    function verifyIdentitiy () external {
-        // Verify the identity of the user before allowing them to create the hand contract
-    }
-
     function deposit(uint _helpingHandId, uint _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
         // Transfer USDC from sender to this contract (requires prior approval)
         require(usdc.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
-
-        // TODO: Look into making this a payable
 
         // Update the balance of the person calling the contract
         // This mapping adds to the total amount of USDC an address has on the contract
@@ -93,6 +82,11 @@ contract HelpingHandFactory {
 
     function getContractBalance() external view returns (uint256) {
         return usdc.balanceOf(address(this));
+    }
+
+    function getBalanceOfHand(uint _helpingHandId) external view returns (uint256) {
+        // Takes in the ID of a hand and returns the balance
+        return idToHand[_helpingHandId].currentBalance;
     }
 
     // TODO: Create a getter for the balance at a given handID

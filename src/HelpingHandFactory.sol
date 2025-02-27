@@ -3,9 +3,8 @@ pragma solidity ^0.8.26;
 
 import {HelpingHand} from "./HelpingHand.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-// USDC Sepolia address for testing: 0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8
+// USDC Sepolia address for testing: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
 
 contract HelpingHandFactory {
     // Variables to deploy a helping hand contract
@@ -48,19 +47,12 @@ contract HelpingHandFactory {
         helpingHandIdCounter++; // iterate the id 1 now that it has been used
     }
 
-    function deposit(uint _helpingHandId, uint _amount) external {
+    function deposit(uint8 _helpingHandId, uint8 _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
         require(usdc.balanceOf(msg.sender) >= _amount, "USDC balance must be greater than the sending amount");
         
-        uint amountToSend = _amount * 10 **6;
-        // Approve the sending of USDC
-        usdc.approve(usdcAddress, amountToSend);
-        //Approve the sending to this contract?
-        usdc.approve(address(this), amountToSend);
-
         // Transfer USDC from sender to this contract (requires prior approval)
         require(usdc.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
-        usdc.approve(address(this), amountToSend);
 
         // Update the balance of the person calling the contract
         // This mapping adds to the total amount of USDC an address has on the contract

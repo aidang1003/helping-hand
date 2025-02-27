@@ -5,6 +5,7 @@ import {HelpingHand} from "./HelpingHand.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// USDC Sepolia address for testing: 0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8
 
 contract HelpingHandFactory {
     // Variables to deploy a helping hand contract
@@ -23,17 +24,19 @@ contract HelpingHandFactory {
     uint helpingHandIdCounter = 0;
 
     IERC20 public immutable usdc;
+    address usdcAddress;
 
     // Events
     event Deposit(address indexed user, uint256 amount);
     event Withdrawal(address indexed user, uint256 amount);
 
     // Mappings
-    mapping(uint256 helpingHandId => hand helpingHand) idToHand; // tracks balances a hand proposal has
+    mapping(uint256 helpingHandId => hand helpingHand) public idToHand; // tracks balances a hand proposal has
     mapping(address => uint256) public balances; // tracks the balance contributed by a user
 
     constructor(address _usdcAddress) { // Depending on the network we deploy it will have a different USDC contract address so specify in the constructor
         require(_usdcAddress != address(0), "Invalid USDC address");
+        usdcAddress = _usdcAddress;
         usdc = IERC20(_usdcAddress);
     }
 
@@ -47,8 +50,17 @@ contract HelpingHandFactory {
 
     function deposit(uint _helpingHandId, uint _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
+        require(usdc.balanceOf(msg.sender) >= _amount, "USDC balance must be greater than the sending amount");
+        
+        uint amountToSend = _amount * 10 **6;
+        // Approve the sending of USDC
+        usdc.approve(usdcAddress, amountToSend);
+        //Approve the sending to this contract?
+        usdc.approve(address(this), amountToSend);
+
         // Transfer USDC from sender to this contract (requires prior approval)
         require(usdc.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+        usdc.approve(address(this), amountToSend);
 
         // Update the balance of the person calling the contract
         // This mapping adds to the total amount of USDC an address has on the contract
@@ -88,7 +100,5 @@ contract HelpingHandFactory {
         // Takes in the ID of a hand and returns the balance
         return idToHand[_helpingHandId].currentBalance;
     }
-
-    // TODO: Create a getter for the balance at a given handID
 
 }
